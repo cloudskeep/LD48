@@ -17,7 +17,9 @@ public class CharacterController : MonoBehaviour
     private GameObject contactPoint;
     public GameObject wildRock;
 
-    private Animator boss;
+    public static bool rainActive;
+
+    public Animator boss;
 
     public Vector3 restartPoint; // this is for debugging purposes and should be removed in the final build
 
@@ -36,7 +38,7 @@ public class CharacterController : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         print("trigger entered");
-        if (other.CompareTag("DamageTrigger"))
+        if (other.CompareTag("DamageTrigger") || other.CompareTag("BossFist"))
         {
             TimerManager.timeAdd = 10;
         }
@@ -142,6 +144,7 @@ public class CharacterController : MonoBehaviour
 
     IEnumerator Rain()
     {
+        rainActive = true;
         GameObject latestRock;
         int rocksToThrow;
         float rockCooldown;
@@ -160,6 +163,7 @@ public class CharacterController : MonoBehaviour
         boss.Play("Neutral");
         yield return new WaitForSeconds(1f);
         boss.enabled = false;
+        rainActive = false;
     }
 }
 

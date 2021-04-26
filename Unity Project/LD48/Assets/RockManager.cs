@@ -19,7 +19,7 @@ public class RockManager : MonoBehaviour
         {
             TimerManager.penalty = 5;
         }
-        else if (collision.gameObject.CompareTag("DamageTrigger"))
+        else if (collision.gameObject.CompareTag("BossFist"))
         {
             TimerManager.penalty = 3;
         }

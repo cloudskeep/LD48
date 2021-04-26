@@ -27,8 +27,6 @@ public class TimerManager : MonoBehaviour
             if (!animPlaying)
                 StartCoroutine("GoodShake");
 
-            Camera.main.gameObject.GetComponent<CameraShake>().TriggerShake();
-
             if (seconds < penalty)
             {
                 minutes--;

@@ -307,6 +307,7 @@
 "Assets/Scripts/MenuManager.cs"
 "Assets/Scripts/TimerManager.cs"
 "Assets/Scripts/VolumeManager.cs"
+"Assets/Scripts/Whirlwind.cs"
 -langversion:8.0
 
 /deterministic

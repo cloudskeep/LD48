@@ -10,6 +10,7 @@ TagManager:
   - RestartTrigger
   - RainTrigger
   - BossHead
+  - BossFist
   layers:
   - Default
   - TransparentFX
