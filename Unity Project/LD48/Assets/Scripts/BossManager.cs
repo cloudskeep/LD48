@@ -28,9 +28,34 @@ public class BossManager : MonoBehaviour
     private bool sweepOngoing;
     private bool currentlySweeping;
     private bool startDelay;
+    public GameObject leftSlamTarget;
+    public GameObject rightSlamTarget;
+    private bool slamInPosition;
+    private bool slamOngoing;
+    private bool currentlySlamming;
+    public GameObject leftHeavySlam;
+    public GameObject rightHeavySlam;
+    private int currentFloor = 1;
+    public GameObject floor1fg;
+    public GameObject floor2fg;
+    public GameObject newBossPosition;
+    public GameObject newSweepPosition;
+    public GameObject newSweepTarget;
+    public GameObject newLeftSlamTarget;
+    public GameObject newRightSlamTarget;
+    public GameObject newLeftHeavyTarget;
+    public GameObject newRightHeavyTarget;
+    public GameObject newBossPosition2;
+    public GameObject newSweepPosition2;
+    public GameObject newSweepTarget2;
+    public GameObject newFistPositionLeft;
+    public GameObject newFistPositionRight;
+    public GameObject newFistPositionLeft2;
+    public GameObject newFistPositionRight2;
 
     private void Awake()
     {
+        currentFloor = 1;
         originalPosLeft = leftFist.transform.position;
         originalPosRight = rightFist.transform.position;
         StartCoroutine("RandomActions", false);
@@ -65,6 +90,93 @@ public class BossManager : MonoBehaviour
         }
     }
 
+    IEnumerator BreakFloor()
+    {
+        float step = speed * Time.deltaTime;
+        actionsEnabled = false;
+        leftMoving = false;
+        rightMoving = false;
+
+        if (!slamInPosition)
+        {
+            if (Vector2.Distance(leftFist.transform.position, leftSlamTarget.transform.position) > speed * Time.deltaTime)
+            {
+                print("moving left into position");
+                leftFist.transform.position = Vector2.MoveTowards(leftFist.transform.position, leftSlamTarget.transform.position, step);
+            }
+
+            if (Vector2.Distance(rightFist.transform.position, rightSlamTarget.transform.position) > speed * Time.deltaTime)
+            {
+                print("moving right into position");
+                rightFist.transform.position = Vector2.MoveTowards(rightFist.transform.position, rightSlamTarget.transform.position, step);
+            }
+
+            else if (!(Vector2.Distance(leftFist.transform.position, leftSlamTarget.transform.position) > speed * Time.deltaTime) && !(Vector2.Distance(rightFist.transform.position, rightSlamTarget.transform.position) > speed * Time.deltaTime))
+            {
+                print("in position");
+                yield return new WaitForSeconds(2f);
+                slamInPosition = true;
+            }
+            yield return new WaitForEndOfFrame();
+            StartCoroutine("BreakFloor");
+        }
+
+        if (slamInPosition)
+        {
+            if (Vector2.Distance(leftFist.transform.position, leftHeavySlam.transform.position) > speed * Time.deltaTime)
+            {
+                print("moving left into slam");
+                leftFist.transform.position = Vector2.MoveTowards(leftFist.transform.position, leftHeavySlam.transform.position, step);
+            }
+
+            if (Vector2.Distance(rightFist.transform.position, rightHeavySlam.transform.position) > speed * Time.deltaTime)
+            {
+                print("moving right into slam");
+                rightFist.transform.position = Vector2.MoveTowards(rightFist.transform.position, rightHeavySlam.transform.position, step);
+            }
+            else if (!(Vector2.Distance(leftFist.transform.position, leftHeavySlam.transform.position) > speed * Time.deltaTime) && !(Vector2.Distance(rightFist.transform.position, rightHeavySlam.transform.position) > speed * Time.deltaTime))
+            {
+                print("returning");
+                currentFloor++;
+                actionsEnabled = true;
+                StartCoroutine("LeftFistReturn");
+                StartCoroutine("RightFistReturn");
+                slamInPosition = false;
+
+                yield return new WaitForSeconds(1f);
+                Camera.main.gameObject.GetComponent<CameraManager>().FixCam(currentFloor);
+
+                if (currentFloor == 2)
+                {
+                    gameObject.transform.position = newBossPosition.transform.position;
+                    sweepPosition.transform.position = newSweepPosition.transform.position;
+                    sweepTarget.transform.position = newSweepTarget.transform.position;
+                    leftSlamTarget.transform.position = newLeftSlamTarget.transform.position;
+                    rightSlamTarget.transform.position = newRightSlamTarget.transform.position;
+                    leftHeavySlam.transform.position = newLeftHeavyTarget.transform.position;
+                    rightHeavySlam.transform.position = newRightHeavyTarget.transform.position;
+                    originalPosLeft = newFistPositionLeft.transform.position;
+                    originalPosRight = newFistPositionRight.transform.position;
+                    floor1fg.SetActive(false);
+                }
+                else
+                {
+                    gameObject.transform.position = newBossPosition2.transform.position;
+                    sweepPosition.transform.position = newSweepPosition2.transform.position;
+                    sweepTarget.transform.position = newSweepTarget2.transform.position;
+                    originalPosLeft = newFistPositionLeft2.transform.position;
+                    originalPosRight = newFistPositionRight2.transform.position;
+                    floor2fg.SetActive(false);
+                }
+
+                StopCoroutine("BreakFloor");
+            }
+
+            yield return new WaitForEndOfFrame();
+            if (!actionsEnabled) StartCoroutine("BreakFloor");
+        }
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
@@ -73,7 +185,7 @@ public class BossManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.G))
         {
-            StartCoroutine("SweepAttack");
+            StartCoroutine("BreakFloor");
         }
 
         if (leftMoving && Vector2.Distance(leftFist.transform.position, targetLeft) > speed * Time.deltaTime)

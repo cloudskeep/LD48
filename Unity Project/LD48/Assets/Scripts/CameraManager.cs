@@ -10,6 +10,10 @@ public class CameraManager : MonoBehaviour
     public Vector3 targetPosition;
     public Vector2 maxPosition;
     public Vector2 minPosition;
+    public Vector2 area2Min;
+    public Vector2 area2Max;
+    public Vector2 area3Min;
+    public Vector2 area3Max;
 
     // Start is called before the first frame update
     void Start()
@@ -40,8 +44,18 @@ public class CameraManager : MonoBehaviour
         }
     }
 
-    public void FixCam()
+    public void FixCam(int area)
     {
-        transform.position = cameraRef.transform.position;
+        if (area == 1 || area == 0) transform.position = new Vector3(cameraRef.transform.position.x, cameraRef.transform.position.y, -10);
+        if (area == 2)
+        {
+            minPosition = area2Min;
+            maxPosition = area2Max;
+        }
+        else if (area == 3)
+        {
+            minPosition = area3Min;
+            maxPosition = area3Max;
+        }
     }
 }

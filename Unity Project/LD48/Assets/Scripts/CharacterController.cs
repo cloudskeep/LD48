@@ -20,11 +20,13 @@ public class CharacterController : MonoBehaviour
     public static bool rainActive;
 
     public Animator boss;
+    private Animator anim;
 
     public Vector3 restartPoint; // this is for debugging purposes and should be removed in the final build
 
     void Start()
     {
+        anim = GetComponent<Animator>();
         _rigidbody = GetComponent<Rigidbody2D>();
         pauseMenu.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
@@ -73,11 +75,28 @@ public class CharacterController : MonoBehaviour
     {
         var _move = Input.GetAxisRaw("Horizontal");
         transform.position = transform.position + new Vector3(_move * _speed * Time.deltaTime, 0, 0);
+        anim.SetFloat("moveX", Input.GetAxisRaw("Horizontal"));
+
+        if (_move == -1)
+        {
+            anim.SetBool("playerIdle", false);
+            //transform.localScale = new Vector3(1.574892f, 1.574892f, 1.574892f);
+            GetComponent<SpriteRenderer>().flipX = true;
+        }
+        else if (_move == 1)
+        {
+            anim.SetBool("playerIdle", false);
+            GetComponent<SpriteRenderer>().flipX = false;
+        }
+        else if (_move == 0) anim.SetBool("playerIdle", true); // transform.localScale = new Vector3(6.604697f, 6.604697f, 6.604697f);
+
 
         if (Input.GetButtonDown("Jump") && Mathf.Abs(_rigidbody.velocity.y) < 0.001f)
         {
+            anim.SetBool("isJumping", true);
             _rigidbody.AddForce(new Vector2(0, JumpForce), ForceMode2D.Impulse);
         }
+        else if (Mathf.Abs(_rigidbody.velocity.y) < 0.001f) anim.SetBool("isJumping", false);
 
         if (Input.GetKeyDown(KeyCode.R)) // this is for debugging purposes and should be removed in the final build
         {

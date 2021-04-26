@@ -48,7 +48,7 @@ public class CameraShake : MonoBehaviour
         {
             CameraShaking = false;
             shakeDuration = 0f;
-            Camera.main.GetComponent<CameraManager>().FixCam();
+            Camera.main.GetComponent<CameraManager>().FixCam(1);
             transform.localPosition = CameraManager.cameraRef.transform.position;
         }
     }
