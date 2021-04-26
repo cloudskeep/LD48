@@ -20,12 +20,20 @@ public class BossManager : MonoBehaviour
     private bool CancelReturnRight;
     private bool leftReturning;
     private bool rightReturning;
+    private bool actionsEnabled = true;
+    public Sprite sweepSprite;
+    public Sprite regularSprite;
+    public GameObject sweepPosition;
+    public GameObject sweepTarget;
+    private bool sweepOngoing;
+    private bool currentlySweeping;
+    private bool startDelay;
 
     private void Awake()
     {
         originalPosLeft = leftFist.transform.position;
         originalPosRight = rightFist.transform.position;
-        StartCoroutine("RandomActions");
+        StartCoroutine("RandomActions", false);
     }
 
     public void UpdateOriginalPos(int fistNum, Vector2 newPos)
@@ -65,7 +73,7 @@ public class BossManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.G))
         {
-            PunchAttack(2);
+            StartCoroutine("SweepAttack");
         }
 
         if (leftMoving && Vector2.Distance(leftFist.transform.position, targetLeft) > speed * Time.deltaTime)
@@ -153,38 +161,93 @@ public class BossManager : MonoBehaviour
         }
     }
 
-    IEnumerator RandomActions()
+    IEnumerator SweepAttack()
     {
-        int attackToLaunch;
-        attackToLaunch = Random.Range(1, 4);
-
-        switch (attackToLaunch)
+        if (!sweepOngoing)
         {
-            case 1:
-                if (!leftMoving && !leftReturning)
-                {
-                    PunchAttack(1);
-                }
-                
-                break;
-            case 2:
-                if (!rightMoving && !rightReturning)
-                {
-                    PunchAttack(2);
-                }
-                break;
-            case 3:
-                if (!CharacterController.rainActive)
-                {
-                    player.GetComponent<CharacterController>().StartCoroutine("Rain");
-                }
-                break;
-            case 4:
-                print("do stuff");
-                break;
+            actionsEnabled = false;
+            leftFist.GetComponent<SpriteRenderer>().sprite = sweepSprite;
+            sweepOngoing = true;
         }
+        float step = speed * Time.deltaTime;
+        print(Vector2.Distance(leftFist.transform.position, sweepPosition.transform.position));
+        print(speed * Time.deltaTime);
+        if (!currentlySweeping && Vector2.Distance(leftFist.transform.position, sweepPosition.transform.position) > speed * Time.deltaTime)
+        {
+            leftFist.transform.position = Vector2.MoveTowards(leftFist.transform.position, sweepPosition.transform.position, step);
+            yield return new WaitForEndOfFrame();
+            StartCoroutine("SweepAttack");
+        }
+        else if (Vector2.Distance(leftFist.transform.position, sweepTarget.transform.position) > speed * Time.deltaTime)
+        {
+            currentlySweeping = true;
+            leftFist.transform.position = Vector2.MoveTowards(leftFist.transform.position, sweepTarget.transform.position, step);
+            yield return new WaitForEndOfFrame();
+            StartCoroutine("SweepAttack");
+        }
+        else
+        {
+            currentlySweeping = false;
+            sweepOngoing = false;
+            leftFist.GetComponent<SpriteRenderer>().sprite = regularSprite;
+            StartCoroutine("LeftFistReturn");
+            actionsEnabled = true;
+        }
+    }
 
-        yield return new WaitForSeconds(Random.Range(0.5f, 2f));
-        StartCoroutine("RandomActions");
+    IEnumerator RandomActions(bool x)
+    {
+        if (!startDelay)
+        {
+            yield return new WaitForSeconds(3f);
+            startDelay = false;
+        }
+        int attackToLaunch;
+        if (x)
+            attackToLaunch = Random.Range(1, 4);
+        else
+            attackToLaunch = Random.Range(1, 5);
+
+        print(attackToLaunch);
+
+        if (actionsEnabled)
+        {
+            switch (attackToLaunch)
+            {
+                case 1:
+                    if (!leftMoving && !leftReturning)
+                    {
+                        PunchAttack(1);
+                    }
+
+                    break;
+                case 2:
+                    if (!rightMoving && !rightReturning)
+                    {
+                        PunchAttack(2);
+                    }
+                    break;
+                case 3:
+                    if (!CharacterController.rainActive)
+                    {
+                        player.GetComponent<CharacterController>().StartCoroutine("Rain");
+                    }
+                    break;
+                case 4:
+                    attackToLaunch = Random.Range(1, 5);
+                    if (attackToLaunch == 1 && !leftReturning && !leftMoving)
+                        StartCoroutine("SweepAttack");
+                    else
+                    {
+                        yield return new WaitForEndOfFrame();
+                        StartCoroutine("RandomActions", true);
+                    }
+                    break;
+            }
+        }
+        else yield return false;
+
+        yield return new WaitForSeconds(Random.Range(0.5f, 1.4f));
+        StartCoroutine("RandomActions", false);
     }
 }
